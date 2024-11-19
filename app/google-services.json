@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1024682580631",
+    "firebase_url": "https://grocerysplit-deeb2-default-rtdb.firebaseio.com",
+    "project_id": "grocerysplit-deeb2",
+    "storage_bucket": "grocerysplit-deeb2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1024682580631:android:ed3720f73dc991493667d2",
+        "android_client_info": {
+          "package_name": "edu.uga.cs.grocerysplit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv3aeBnQWN80l2idiZ2FO3WDzSC8yGcGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
