@@ -2,6 +2,7 @@ package edu.uga.cs.grocerysplit;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,6 +23,8 @@ public class AddToList extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_to_list_screen);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         EditText name = findViewById(R.id.editTextText);
         EditText cost = findViewById(R.id.editTextNumberDecimal);
@@ -63,6 +66,17 @@ public class AddToList extends AppCompatActivity {
                 }
             }
         });
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            Intent intent = new Intent(AddToList.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clears the back stack
+            startActivity(intent);
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

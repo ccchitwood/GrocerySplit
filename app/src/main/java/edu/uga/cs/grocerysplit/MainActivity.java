@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button signOutButton = findViewById(R.id.button3);
         Button addItemButton = findViewById(R.id.button5);
+        Button viewShoppingListButton = findViewById(R.id.button8);
 
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
@@ -56,6 +57,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, AddToList.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+        viewShoppingListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, ShoppingList.class);
                 startActivity(intent);
                 finish();
             }

@@ -35,5 +35,8 @@
         <activity
             android:name=".AddToList"
             android:exported="true"/>
+        <activity
+            android:name=".ShoppingList"
+            android:exported="true"/>
     </application>
 </manifest>
