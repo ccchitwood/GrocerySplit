@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -68,15 +69,35 @@ public class ShoppingList extends AppCompatActivity {
                     Log.d("Shopping List", product.getQuantity() + "");
 
                     Button deleteButton = new Button(getApplicationContext());
+                    deleteButton.setText("Delete item");
+                    Button editButton = new Button(getApplicationContext());
+                    editButton.setText("Edit item");
+                    Button markAsPurchasedButton = new Button(getApplicationContext());
+                    markAsPurchasedButton.setText("Mark item as purchased");
+
 
                     deleteButton.setOnClickListener(x -> deleteItem(product.getName(),
                             product.getCost(), product.getQuantity()));
 
+                    editButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent intent = new Intent(ShoppingList.this, EditItem.class);
+                            intent.putExtra("name", product.getName());
+                            intent.putExtra("cost", product.getCost());
+                            intent.putExtra("quantity", product.getQuantity());
+                            startActivity(intent);
+                            finish();
+                        }
+                    });
+
                     itemView.addView(productName);
                     itemView.addView(productCost);
                     itemView.addView(productQuantity);
+
                     itemView.addView(deleteButton);
-                    // add edit item button
+                    itemView.addView(editButton);
+                    itemView.addView(markAsPurchasedButton);
                 }
             }
             @Override
@@ -104,6 +125,10 @@ public class ShoppingList extends AppCompatActivity {
                 Log.e("Shopping List", "Error deleting product: " + error.getMessage());
             }
         });
+    }
+
+    public void editItem(String name, double cost, int quantity) {
+
     }
 
     @Override
