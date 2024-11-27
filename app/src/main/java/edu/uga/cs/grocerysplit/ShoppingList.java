@@ -43,6 +43,8 @@ public class ShoppingList extends AppCompatActivity {
         productsReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                itemView.removeAllViews();
+
                 List<Product> shoppingList = new ArrayList<>();
 
                 for (DataSnapshot products : snapshot.getChildren()) {
