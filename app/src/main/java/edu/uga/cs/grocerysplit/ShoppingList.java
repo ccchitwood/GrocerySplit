@@ -91,6 +91,12 @@ public class ShoppingList extends AppCompatActivity {
                         }
                     });
 
+                    markAsPurchasedButton.setOnClickListener(x -> markAsPurchased(
+                            product.getName(),
+                            product.getCost(),
+                            product.getQuantity()
+                    ));
+
                     itemView.addView(productName);
                     itemView.addView(productCost);
                     itemView.addView(productQuantity);
@@ -129,6 +135,40 @@ public class ShoppingList extends AppCompatActivity {
 
     public void editItem(String name, double cost, int quantity) {
 
+    }
+
+    // Method to move an item to the shopping basket
+    public void markAsPurchased(String name, double cost, int quantity) {
+        productsReference.orderByChild("name").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot productSnapshot : snapshot.getChildren()) {
+                    Product product = productSnapshot.getValue(Product.class);
+
+                    if (product != null && product.getCost() == cost && product.getQuantity() == quantity) {
+                        // Add the product to the "basket" node
+                        DatabaseReference basketReference = FirebaseDatabase.getInstance()
+                                .getReference("basket")
+                                .child(productSnapshot.getKey()); // Use the same key for uniqueness
+
+                        basketReference.setValue(product).addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                // Remove the product from the "products" node
+                                productSnapshot.getRef().removeValue();
+                                Log.d("Shopping List", "Item moved to shopping basket successfully.");
+                            } else {
+                                Log.e("Shopping List", "Error moving item to basket: " + task.getException().getMessage());
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Shopping List", "Error moving product: " + error.getMessage());
+            }
+        });
     }
 
     @Override

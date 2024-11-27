@@ -41,5 +41,8 @@
         <activity
             android:name=".EditItem"
             android:exported="true"/>
+        <activity
+            android:name=".ShoppingBasket"
+            android:exported="true"/>
     </application>
 </manifest>
