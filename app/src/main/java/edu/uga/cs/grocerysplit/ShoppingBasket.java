@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -101,6 +102,17 @@ public class ShoppingBasket extends AppCompatActivity {
                     itemView.addView(deleteButton);
                     itemView.addView(editButton);
                 }
+
+                Button checkOutButton = new Button(getApplicationContext());
+                checkOutButton.setText("Checkout Basket");
+                itemView.addView(checkOutButton);
+
+                checkOutButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        checkoutBasket();
+                    }
+                });
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -146,6 +158,54 @@ public class ShoppingBasket extends AppCompatActivity {
             }
         });
     }
+
+    public void checkoutBasket() {
+        String userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        DatabaseReference basketReference = database.getReference("basket");
+        DatabaseReference checkedOutReference = database.getReference("checkedOutBaskets");
+
+        basketReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Product> basketItems = new ArrayList<>();
+                double totalPrice = 0.0;
+
+                // Retrieve basket items and calculate total price
+                for (DataSnapshot productSnapshot : snapshot.getChildren()) {
+                    Product product = productSnapshot.getValue(Product.class);
+                    if (product != null) {
+                        basketItems.add(product);
+                        totalPrice += product.getCost() * product.getQuantity();
+                    }
+                }
+
+                if (!basketItems.isEmpty()) {
+                    // Generate a unique basket ID
+                    String basketID = checkedOutReference.push().getKey();
+
+                    // Create a new checked-out basket
+                    if (basketID != null) {
+                        CheckedOutBasket checkedOutBasket = new CheckedOutBasket(userEmail, basketItems, totalPrice);
+                        checkedOutReference.child(basketID).setValue(checkedOutBasket);
+                    }
+
+                    // Clear the shopping basket
+                    basketReference.removeValue();
+                }
+
+                // Optionally, navigate to a confirmation or summary screen
+                Intent intent = new Intent(ShoppingBasket.this, CheckedOutList.class);
+                startActivity(intent);
+                finish();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Checkout", "Error during checkout: " + error.getMessage());
+            }
+        });
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

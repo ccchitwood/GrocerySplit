@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         Button addItemButton = findViewById(R.id.button5);
         Button viewShoppingListButton = findViewById(R.id.button8);
         Button viewShoppingBasketButton = findViewById(R.id.button10);
+        Button viewCheckoutListButton = findViewById(R.id.button11);
 
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
@@ -74,6 +75,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, ShoppingBasket.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+        viewCheckoutListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, CheckedOutList.class);
                 startActivity(intent);
                 finish();
             }

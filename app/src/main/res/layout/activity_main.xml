@@ -33,4 +33,10 @@
         android:layout_height="wrap_content"
         android:text="View Shopping Basket" />
 
+    <Button
+        android:id="@+id/button11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View Checked Out Baskets" />
+
 </LinearLayout>
