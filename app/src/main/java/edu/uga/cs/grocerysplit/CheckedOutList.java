@@ -19,8 +19,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class CheckedOutList extends AppCompatActivity {
 
@@ -60,9 +63,13 @@ public class CheckedOutList extends AppCompatActivity {
         checkedOutLayout = findViewById(R.id.linearLayout1);
         checkedOutLayout.removeAllViews();
 
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss", Locale.getDefault());
+
         for (CheckedOutBasket basket : baskets) {
             TextView basketDetails = new TextView(this);
-            basketDetails.setText("User: " + basket.getUserID() + "\nTotal Price: $" + basket.getTotalPrice());
+            Date date = new Date((long) basket.getDate() * 1000);
+            String formattedDate = sdf.format(date);
+            basketDetails.setText("User: " + basket.getUserID() + "\nDate: " + formattedDate + "\nTotal Price: $" + basket.getTotalPrice());
             checkedOutLayout.addView(basketDetails);
 
             Button viewItemsButton = new Button(this);

@@ -185,7 +185,8 @@ public class ShoppingBasket extends AppCompatActivity {
 
                     // Create a new checked-out basket
                     if (basketID != null) {
-                        CheckedOutBasket checkedOutBasket = new CheckedOutBasket(userEmail, basketItems, totalPrice);
+                        int currentDate = (int) (System.currentTimeMillis() / 1000);
+                        CheckedOutBasket checkedOutBasket = new CheckedOutBasket(userEmail, basketItems, totalPrice, currentDate);
                         checkedOutReference.child(basketID).setValue(checkedOutBasket);
                     }
 
