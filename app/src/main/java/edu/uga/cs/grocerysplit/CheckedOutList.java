@@ -1,13 +1,16 @@
 package edu.uga.cs.grocerysplit;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -81,7 +84,61 @@ public class CheckedOutList extends AppCompatActivity {
             });
 
             checkedOutLayout.addView(viewItemsButton);
+
+            Button editCostButton = new Button(this);
+            editCostButton.setText("Edit Total Cost");
+            editCostButton.setOnClickListener(v -> showEditCostDialog(basket));
+            checkedOutLayout.addView(editCostButton);
         }
+    }
+
+    private void showEditCostDialog(CheckedOutBasket basket) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Edit Total Cost");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setHint("Enter new total cost");
+        builder.setView(input);
+
+        // Set up the dialog buttons
+        builder.setPositiveButton("Save", (dialog, which) -> {
+            String newCostString = input.getText().toString();
+            if (!newCostString.isEmpty()) {
+                double newCost = Double.parseDouble(newCostString);
+                updateTotalCostInFirebase(basket, newCost);
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void updateTotalCostInFirebase(CheckedOutBasket basket, double newCost) {
+        DatabaseReference checkedOutReference = FirebaseDatabase.getInstance().getReference("checkedOutBaskets");
+
+        // Find the basket in Firebase by matching its key or unique identifier
+        checkedOutReference.orderByChild("userID").equalTo(basket.getUserID())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot basketSnapshot : snapshot.getChildren()) {
+                            CheckedOutBasket firebaseBasket = basketSnapshot.getValue(CheckedOutBasket.class);
+
+                            if (firebaseBasket != null && firebaseBasket.getDate() == basket.getDate()) {
+                                basketSnapshot.getRef().child("totalPrice").setValue(newCost)
+                                        .addOnSuccessListener(aVoid -> Log.d("CheckedOutList", "Total cost updated successfully"))
+                                        .addOnFailureListener(e -> Log.e("CheckedOutList", "Failed to update total cost: " + e.getMessage()));
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("CheckedOutList", "Error updating total cost: " + error.getMessage());
+                    }
+                });
     }
 
     @Override
