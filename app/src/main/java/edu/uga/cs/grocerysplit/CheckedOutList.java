@@ -79,7 +79,8 @@ public class CheckedOutList extends AppCompatActivity {
             viewItemsButton.setText("View Items");
             viewItemsButton.setOnClickListener(v -> {
                 Intent intent = new Intent(this, CheckOutItems.class);
-                intent.putParcelableArrayListExtra("items", new ArrayList<>(basket.getItems()));
+                if (basket.getItems() != null && !basket.getItems().isEmpty()) intent.putParcelableArrayListExtra("basketItems", new ArrayList<>(basket.getItems()));
+                intent.putExtra("basketDate", basket.getDate());
                 startActivity(intent);
             });
 
