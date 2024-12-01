@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -91,6 +92,19 @@ public class CheckedOutList extends AppCompatActivity {
             editCostButton.setOnClickListener(v -> showEditCostDialog(basket));
             checkedOutLayout.addView(editCostButton);
         }
+
+        Button settlePurchasedItemsButton = new Button(this);
+        settlePurchasedItemsButton.setText("Settle Purchased Items");
+        settlePurchasedItemsButton.setOnClickListener(v -> {
+            if (baskets == null || baskets.isEmpty()) {
+                Toast.makeText(CheckedOutList.this, "No valid purchases to settle.", Toast.LENGTH_SHORT).show();
+            } else {
+                Intent intent = new Intent(this, SettleItems.class);
+                startActivity(intent);
+            }
+        });
+
+        checkedOutLayout.addView(settlePurchasedItemsButton);
     }
 
     private void showEditCostDialog(CheckedOutBasket basket) {
