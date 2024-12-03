@@ -15,6 +15,15 @@
         android:theme="@style/Theme.MaterialComponents.DayNight"
         tools:targetApi="31">
         <activity
+            android:name=".SettleItems"
+            android:exported="false" />
+        <activity
+            android:name=".CheckOutItems"
+            android:exported="false" />
+        <activity
+            android:name=".CheckedOutList"
+            android:exported="false" />
+        <activity
             android:name=".SplashScreen"
             android:exported="true">
             <intent-filter>
@@ -25,21 +34,25 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true"/>
+            android:exported="true" />
         <activity
             android:name=".Login"
-            android:exported="true"/>
+            android:exported="true" />
         <activity
             android:name=".Register"
-            android:exported="true"/>
+            android:exported="true" />
         <activity
             android:name=".AddToList"
-            android:exported="true"/>
+            android:exported="true" />
         <activity
             android:name=".ShoppingList"
-            android:exported="true"/>
+            android:exported="true" />
         <activity
             android:name=".EditItem"
-            android:exported="true"/>
+            android:exported="true" />
+        <activity
+            android:name=".ShoppingBasket"
+            android:exported="true" />
     </application>
+
 </manifest>

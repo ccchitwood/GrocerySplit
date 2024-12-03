@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -22,11 +23,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShoppingList extends AppCompatActivity {
+public class ShoppingBasket extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
-    private DatabaseReference productsReference;
+    private DatabaseReference basketReference;
     private LinearLayout itemView;
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,10 +38,10 @@ public class ShoppingList extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
-        productsReference = database.getReference("products");
+        basketReference = database.getReference("basket");
         itemView = findViewById(R.id.linearLayout1);
 
-        productsReference.addValueEventListener(new ValueEventListener() {
+        basketReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 itemView.removeAllViews();
@@ -54,7 +55,7 @@ public class ShoppingList extends AppCompatActivity {
 
                 if (shoppingList.isEmpty()) {
                     TextView noItemsMessage = new TextView(getApplicationContext());
-                    noItemsMessage.setText("No items currently on the shopping list.");
+                    noItemsMessage.setText("No items currently on the shopping basket.");
                     itemView.addView(noItemsMessage);
                     return;
                 }
@@ -62,29 +63,24 @@ public class ShoppingList extends AppCompatActivity {
                 for (Product product : shoppingList) {
                     TextView productName = new TextView(getApplicationContext());
                     productName.setText("Name: " + product.getName());
-                    Log.d("Shopping List", product.getName());
+                    Log.d("Shopping Basket", product.getName());
                     TextView productCost = new TextView(getApplicationContext());
                     productCost.setText("Cost: $" + product.getCost());
-                    Log.d("Shopping List", product.getCost() + "");
+                    Log.d("Shopping Basket", product.getCost() + "");
                     TextView productQuantity = new TextView(getApplicationContext());
                     productQuantity.setText("Quantity: " + product.getQuantity());
-                    Log.d("Shopping List", product.getQuantity() + "");
+                    Log.d("Shopping Basket", product.getQuantity() + "");
 
                     Button deleteButton = new Button(getApplicationContext());
-                    deleteButton.setText("Delete item");
+                    deleteButton.setText("Remove item from basket");
                     Button editButton = new Button(getApplicationContext());
                     editButton.setText("Edit item");
-                    Button markAsPurchasedButton = new Button(getApplicationContext());
-                    markAsPurchasedButton.setText("Mark item as purchased");
 
-
-                    deleteButton.setOnClickListener(x -> deleteItem(product.getName(),
-                            product.getCost(), product.getQuantity()));
 
                     editButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Intent intent = new Intent(ShoppingList.this, EditItem.class);
+                            Intent intent = new Intent(ShoppingBasket.this, EditItem.class);
                             intent.putExtra("name", product.getName());
                             intent.putExtra("cost", product.getCost());
                             intent.putExtra("quantity", product.getQuantity());
@@ -93,7 +89,7 @@ public class ShoppingList extends AppCompatActivity {
                         }
                     });
 
-                    markAsPurchasedButton.setOnClickListener(x -> markAsPurchased(
+                    deleteButton.setOnClickListener(x -> moveToList(
                             product.getName(),
                             product.getCost(),
                             product.getQuantity()
@@ -105,32 +101,22 @@ public class ShoppingList extends AppCompatActivity {
 
                     itemView.addView(deleteButton);
                     itemView.addView(editButton);
-                    itemView.addView(markAsPurchasedButton);
                 }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
-    }
-    public void deleteItem(String name, double cost, int quantity) {
-        productsReference.orderByChild("name").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot productSnapshot : snapshot.getChildren()) {
-                    Product product = productSnapshot.getValue(Product.class);
+                Button checkOutButton = new Button(getApplicationContext());
+                checkOutButton.setText("Checkout Basket");
+                itemView.addView(checkOutButton);
 
-                    if (product != null && product.getCost() == cost && product.getQuantity() == quantity) {
-                        productSnapshot.getRef().removeValue();
+                checkOutButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        checkoutBasket();
                     }
-                }
-                finish();
-                startActivity(getIntent());
+                });
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Shopping List", "Error deleting product: " + error.getMessage());
+
             }
         });
     }
@@ -140,8 +126,8 @@ public class ShoppingList extends AppCompatActivity {
     }
 
     // Method to move an item to the shopping basket
-    public void markAsPurchased(String name, double cost, int quantity) {
-        productsReference.orderByChild("name").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void moveToList(String name, double cost, int quantity) {
+        basketReference.orderByChild("name").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot productSnapshot : snapshot.getChildren()) {
@@ -149,11 +135,11 @@ public class ShoppingList extends AppCompatActivity {
 
                     if (product != null && product.getCost() == cost && product.getQuantity() == quantity) {
                         // Add the product to the "basket" node
-                        DatabaseReference basketReference = FirebaseDatabase.getInstance()
-                                .getReference("basket")
+                        DatabaseReference productReference = FirebaseDatabase.getInstance()
+                                .getReference("products")
                                 .child(productSnapshot.getKey()); // Use the same key for uniqueness
 
-                        basketReference.setValue(product).addOnCompleteListener(task -> {
+                        productReference.setValue(product).addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 // Remove the product from the "products" node
                                 productSnapshot.getRef().removeValue();
@@ -173,10 +159,59 @@ public class ShoppingList extends AppCompatActivity {
         });
     }
 
+    public void checkoutBasket() {
+        String userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        DatabaseReference basketReference = database.getReference("basket");
+        DatabaseReference checkedOutReference = database.getReference("checkedOutBaskets");
+
+        basketReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Product> basketItems = new ArrayList<>();
+                double totalPrice = 0.0;
+
+                // Retrieve basket items and calculate total price
+                for (DataSnapshot productSnapshot : snapshot.getChildren()) {
+                    Product product = productSnapshot.getValue(Product.class);
+                    if (product != null) {
+                        basketItems.add(product);
+                        totalPrice += product.getCost() * product.getQuantity();
+                    }
+                }
+
+                if (!basketItems.isEmpty()) {
+                    // Generate a unique basket ID
+                    String basketID = checkedOutReference.push().getKey();
+
+                    // Create a new checked-out basket
+                    if (basketID != null) {
+                        int currentDate = (int) (System.currentTimeMillis() / 1000);
+                        CheckedOutBasket checkedOutBasket = new CheckedOutBasket(userEmail, basketItems, totalPrice, currentDate);
+                        checkedOutReference.child(basketID).setValue(checkedOutBasket);
+                    }
+
+                    // Clear the shopping basket
+                    basketReference.removeValue();
+                }
+
+                // Optionally, navigate to a confirmation or summary screen
+                Intent intent = new Intent(ShoppingBasket.this, CheckedOutList.class);
+                startActivity(intent);
+                finish();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Checkout", "Error during checkout: " + error.getMessage());
+            }
+        });
+    }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            Intent intent = new Intent(ShoppingList.this, MainActivity.class);
+            Intent intent = new Intent(ShoppingBasket.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clears the back stack
             startActivity(intent);
             finish();
